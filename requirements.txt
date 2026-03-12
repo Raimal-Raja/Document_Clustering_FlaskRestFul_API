@@ -1,0 +1,9 @@
+# Shared
+scikit-learn
+pandas
+ 
+# Streamlit version
+streamlit
+ 
+# Flask REST API version
+flask
