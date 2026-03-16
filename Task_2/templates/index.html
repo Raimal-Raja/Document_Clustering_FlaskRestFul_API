@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document Clustering System</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0d1b2a;
+    color: #e0eaf5;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  .navbar {
+    background: #112240;
+    border-bottom: 1px solid #1e3a5f;
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  .navbar-title { font-size: 20px; font-weight: 700; color: #fff; }
+  .navbar-title span { color: #4ea8de; }
+  .nav-badge {
+    font-size: 11px;
+    background: rgba(78,168,222,0.15);
+    border: 1px solid rgba(78,168,222,0.35);
+    color: #4ea8de;
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+
+  .main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  .page-title {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 24px;
+  }
+
+  .btn-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .btn {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.18s;
+    background: #1a73e8;
+    color: #fff;
+  }
+  .btn:hover { background: #1557b0; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,115,232,0.4); }
+  .btn.active { background: #4ea8de; }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: #112240;
+    border: 1px solid #1e3a5f;
+    border-radius: 10px;
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before { content: ''; position: absolute; top:0; left:0; right:0; height:3px; }
+  .stat-card:nth-child(1)::before { background: #4ea8de; }
+  .stat-card:nth-child(2)::before { background: #52d68a; }
+  .stat-card:nth-child(3)::before { background: #f7c46a; }
+  .stat-label { font-size: 11px; color: #5a7fa0; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; }
+  .stat-value { font-size: 36px; font-weight: 700; color: #fff; }
+
+  .card {
+    background: #112240;
+    border: 1px solid #1e3a5f;
+    border-radius: 10px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .card-header {
+    background: #0d1e35;
+    padding: 14px 22px;
+    border-bottom: 1px solid #1e3a5f;
+    font-size: 15px;
+    font-weight: 600;
+    color: #4ea8de;
+  }
+  .card-body { padding: 22px; }
+
+  .assign-form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .form-group { display: flex; align-items: center; gap: 10px; }
+  .form-label { font-size: 13px; font-weight: 500; color: #8aadcc; white-space: nowrap; }
+  .form-input {
+    padding: 9px 14px;
+    background: #0d1b2a;
+    border: 1px solid #2a4a6e;
+    border-radius: 6px;
+    color: #e0eaf5;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    width: 140px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: #4ea8de; }
+  .btn-assign {
+    padding: 9px 24px;
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: background 0.18s, transform 0.15s;
+  }
+  .btn-assign:hover { background: #1557b0; transform: translateY(-1px); }
+
+  .toast { display:none; padding:10px 16px; border-radius:6px; font-size:13px; margin-top:14px; text-align:center; }
+  .toast.success { background:rgba(82,214,138,0.12); border:1px solid rgba(82,214,138,0.3); color:#52d68a; }
+  .toast.error   { background:rgba(247,106,138,0.12); border:1px solid rgba(247,106,138,0.3); color:#f76a8a; }
+
+  .data-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .data-table th {
+    text-align:left; padding:10px 16px; font-size:11px;
+    text-transform:uppercase; letter-spacing:1px; color:#5a7fa0;
+    border-bottom:1px solid #1e3a5f; background:#0d1e35;
+  }
+  .data-table td {
+    padding:11px 16px; border-bottom:1px solid rgba(30,58,95,0.5);
+    color:#c5d8ec; vertical-align:top; line-height:1.5;
+  }
+  .data-table tr:last-child td { border-bottom:none; }
+  .data-table tr:hover td { background:rgba(78,168,222,0.04); }
+
+  .doc-badge {
+    display:inline-block; padding:2px 9px;
+    background:#0d1b2a; border:1px solid #2a4a6e;
+    border-radius:4px; font-size:11px; color:#4ea8de; font-weight:600;
+  }
+  .cluster-pill { display:inline-block; padding:3px 11px; border-radius:20px; font-size:11px; font-weight:600; }
+  .pill-Technology  { background:rgba(78,168,222,0.15);  color:#4ea8de; border:1px solid rgba(78,168,222,0.3); }
+  .pill-Sports      { background:rgba(247,106,138,0.15); color:#f76a8a; border:1px solid rgba(247,106,138,0.3); }
+  .pill-Education   { background:rgba(82,214,138,0.15);  color:#52d68a; border:1px solid rgba(82,214,138,0.3); }
+  .pill-Health      { background:rgba(247,196,106,0.15); color:#f7c46a; border:1px solid rgba(247,196,106,0.3); }
+  .pill-Environment { background:rgba(167,130,255,0.15); color:#a782ff; border:1px solid rgba(167,130,255,0.3); }
+
+  .bar-chart { display:flex; flex-direction:column; gap:14px; }
+  .bar-row { display:flex; align-items:center; gap:12px; }
+  .bar-label { font-size:13px; color:#8aadcc; width:120px; flex-shrink:0; }
+  .bar-track { flex:1; height:10px; background:#0d1b2a; border-radius:5px; overflow:hidden; border:1px solid #1e3a5f; }
+  .bar-fill  { height:100%; border-radius:5px; width:0; transition:width 1s cubic-bezier(0.4,0,0.2,1); }
+  .bar-count { font-size:13px; color:#fff; font-weight:600; width:24px; text-align:right; }
+  .bf-tech   { background:#4ea8de; }
+  .bf-sports { background:#f76a8a; }
+  .bf-edu    { background:#52d68a; }
+  .bf-health { background:#f7c46a; }
+  .bf-env    { background:#a782ff; }
+
+  .tag-cloud { display:flex; flex-wrap:wrap; gap:8px; }
+  .tag {
+    padding:5px 14px; background:#0d1b2a; border:1px solid #2a4a6e;
+    border-radius:20px; font-size:12px; color:#7aa5c8;
+    transition:all 0.18s; cursor:default;
+  }
+  .tag:hover { border-color:#4ea8de; color:#4ea8de; background:rgba(78,168,222,0.08); }
+
+  .sql-tabs { display:flex; border-bottom:1px solid #1e3a5f; background:#0d1e35; }
+  .sql-tab {
+    padding:11px 20px; font-size:12px; font-weight:600;
+    letter-spacing:0.5px; cursor:pointer; border:none;
+    border-bottom:2px solid transparent; background:none;
+    color:#5a7fa0; font-family:'Inter',sans-serif;
+    transition:all 0.18s; text-transform:uppercase;
+  }
+  .sql-tab:hover { color:#9ab; }
+  .sql-tab.active { color:#4ea8de; border-bottom-color:#4ea8de; }
+  .sql-content { display:none; padding:20px 22px; }
+  .sql-content.active { display:block; }
+  pre { font-family:'Courier New',monospace; font-size:12.5px; line-height:1.8; color:#8aadcc; white-space:pre-wrap; }
+  .kw  { color:#4ea8de; font-weight:600; }
+  .fn  { color:#52d68a; }
+  .str { color:#f7c46a; }
+  .cm  { color:#3a5a7a; font-style:italic; }
+
+  footer { text-align:center; padding:20px; color:#2e4d6e; font-size:12px; border-top:1px solid #1e3a5f; margin-top:4px; }
+
+  @media(max-width:640px) {
+    .stats-row { grid-template-columns:1fr; }
+    .btn-row { gap:8px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-title">Doc<span>Cluster</span> SQL</div>
+  <div class="nav-badge">Flask · SQLite</div>
+</nav>
+
+<div class="main">
+  <h1 class="page-title">Document Clustering System</h1>
+
+  <div class="btn-row">
+    <button class="btn" onclick="showSection('documents',this)">📄 Show Documents</button>
+    <button class="btn" onclick="showSection('clusters',this)">🗂 Show Clusters</button>
+    <button class="btn" onclick="showSection('by-cluster',this)">📊 Documents by Cluster</button>
+    <button class="btn" onclick="showSection('tags',this)">🏷 Tag Clustering</button>
+    <button class="btn" onclick="showSection('sql',this)">🛢 SQL Reference</button>
+  </div>
+
+  <!-- Assign form -->
+  <div class="card">
+    <div class="card-header">➕ Assign Document to Cluster</div>
+    <div class="card-body">
+      <div class="assign-form">
+        <div class="form-group">
+          <label class="form-label">Document ID</label>
+          <input class="form-input" type="number" id="inp-doc" placeholder="1 – 20" min="1" max="20">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cluster ID</label>
+          <input class="form-input" type="number" id="inp-cluster" placeholder="1 – 5" min="1" max="5">
+        </div>
+        <button class="btn-assign" onclick="assignDoc()">Assign</button>
+      </div>
+      <div class="toast" id="assign-toast"></div>
+    </div>
+  </div>
+
+  <!-- Documents -->
+  <div class="card" id="sec-documents" style="display:none">
+    <div class="card-header">📄 All Documents</div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Doc ID</th><th>Content</th></tr></thead>
+        <tbody id="tbl-documents"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Clusters -->
+  <div class="card" id="sec-clusters" style="display:none">
+    <div class="card-header">🗂 Clusters</div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Cluster ID</th><th>Cluster Name</th><th>Doc Count</th></tr></thead>
+        <tbody id="tbl-clusters"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Documents by Cluster -->
+  <div class="card" id="sec-by-cluster" style="display:none">
+    <div class="card-header">📊 Documents by Cluster</div>
+    <div class="card-body">
+      <div class="bar-chart" id="bar-chart" style="margin-bottom:28px"></div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>Doc ID</th><th>Content</th><th>Cluster</th><th>Tag</th></tr></thead>
+          <tbody id="tbl-by-cluster"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tags -->
+  <div class="card" id="sec-tags" style="display:none">
+    <div class="card-header">🏷 Tag Clustering</div>
+    <div class="card-body">
+      <div class="tag-cloud" id="tag-cloud" style="margin-bottom:22px"></div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>Tag</th><th>Documents</th></tr></thead>
+          <tbody id="tbl-tags"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SQL Reference -->
+  <div class="card" id="sec-sql" style="display:none">
+    <div class="card-header">🛢 SQL Reference</div>
+    <div class="sql-tabs">
+      <button class="sql-tab active" onclick="showSQL('ddl',this)">DDL</button>
+      <button class="sql-tab" onclick="showSQL('dml',this)">DML</button>
+      <button class="sql-tab" onclick="showSQL('dcl',this)">DCL</button>
+      <button class="sql-tab" onclick="showSQL('query',this)">Query</button>
+    </div>
+    <div class="sql-content active" id="sql-ddl"><pre>
+<span class="cm">-- DDL: Data Definition Language</span>
+<span class="kw">CREATE TABLE</span> Documents (
+  DocumentID  <span class="fn">INT</span> <span class="kw">PRIMARY KEY</span>,
+  Title       <span class="fn">VARCHAR</span>(<span class="str">255</span>),
+  Content     <span class="fn">TEXT</span>
+);
+
+<span class="kw">CREATE TABLE</span> Clusters (
+  ClusterID   <span class="fn">INT</span> <span class="kw">PRIMARY KEY</span>,
+  ClusterName <span class="fn">VARCHAR</span>(<span class="str">100</span>)
+);
+
+<span class="kw">CREATE TABLE</span> DocumentClusters (
+  DocumentID <span class="fn">INT</span>,  ClusterID <span class="fn">INT</span>,
+  <span class="kw">PRIMARY KEY</span> (DocumentID, ClusterID),
+  <span class="kw">FOREIGN KEY</span> (DocumentID) <span class="kw">REFERENCES</span> Documents(DocumentID),
+  <span class="kw">FOREIGN KEY</span> (ClusterID)  <span class="kw">REFERENCES</span> Clusters(ClusterID)
+);
+
+<span class="kw">CREATE TABLE</span> DocumentTags (
+  DocumentID <span class="fn">INT</span>,  Tag <span class="fn">VARCHAR</span>(<span class="str">50</span>),
+  <span class="kw">PRIMARY KEY</span> (DocumentID, Tag),
+  <span class="kw">FOREIGN KEY</span> (DocumentID) <span class="kw">REFERENCES</span> Documents(DocumentID)
+);</pre></div>
+    <div class="sql-content" id="sql-dml"><pre>
+<span class="cm">-- DML: Data Manipulation Language</span>
+<span class="kw">INSERT INTO</span> Documents (DocumentID, Title, Content) <span class="kw">VALUES</span>
+  (<span class="str">1</span>, <span class="str">'D1'</span>, <span class="str">'Artificial Intelligence is transforming...'</span>),
+  (<span class="str">2</span>, <span class="str">'D2'</span>, <span class="str">'Machine learning algorithms improve...'</span>), ...;
+
+<span class="kw">INSERT INTO</span> Clusters <span class="kw">VALUES</span>
+  (<span class="str">1</span>,<span class="str">'Technology'</span>),(<span class="str">2</span>,<span class="str">'Sports'</span>),(<span class="str">3</span>,<span class="str">'Education'</span>),
+  (<span class="str">4</span>,<span class="str">'Health'</span>),(<span class="str">5</span>,<span class="str">'Environment'</span>);
+
+<span class="kw">INSERT INTO</span> DocumentClusters <span class="kw">VALUES</span>
+  (<span class="str">1</span>,<span class="str">1</span>),(<span class="str">2</span>,<span class="str">1</span>),(<span class="str">3</span>,<span class="str">1</span>),(<span class="str">4</span>,<span class="str">1</span>), <span class="cm">-- Technology</span>
+  (<span class="str">5</span>,<span class="str">2</span>),(<span class="str">6</span>,<span class="str">2</span>),(<span class="str">7</span>,<span class="str">2</span>),(<span class="str">8</span>,<span class="str">2</span>), <span class="cm">-- Sports</span>
+  (<span class="str">9</span>,<span class="str">3</span>),(<span class="str">10</span>,<span class="str">3</span>),(<span class="str">11</span>,<span class="str">3</span>),(<span class="str">12</span>,<span class="str">3</span>); <span class="cm">-- Education ...</span></pre></div>
+    <div class="sql-content" id="sql-dcl"><pre>
+<span class="cm">-- DCL: Data Control Language</span>
+
+<span class="kw">GRANT</span> <span class="fn">SELECT</span> <span class="kw">ON</span> Documents <span class="kw">TO</span> AnalystUser;
+
+<span class="kw">GRANT</span> <span class="fn">INSERT</span>, <span class="fn">UPDATE</span> <span class="kw">ON</span> DocumentClusters <span class="kw">TO</span> ClusterAdmin;
+
+<span class="kw">REVOKE</span> <span class="fn">DELETE</span> <span class="kw">ON</span> Documents <span class="kw">FROM</span> AnalystUser;</pre></div>
+    <div class="sql-content" id="sql-query"><pre>
+<span class="cm">-- Query: list documents per cluster</span>
+<span class="kw">SELECT</span> c.ClusterName, d.Title
+<span class="kw">FROM</span> Documents d
+<span class="kw">JOIN</span> DocumentClusters dc <span class="kw">ON</span> d.DocumentID = dc.DocumentID
+<span class="kw">JOIN</span> Clusters c <span class="kw">ON</span> dc.ClusterID = c.ClusterID
+<span class="kw">ORDER BY</span> c.ClusterName;
+
+<span class="cm">-- Tag-based clustering simulation</span>
+<span class="kw">SELECT</span> Tag, <span class="fn">GROUP_CONCAT</span>(Title) <span class="kw">AS</span> Documents
+<span class="kw">FROM</span> Documents d
+<span class="kw">JOIN</span> DocumentTags t <span class="kw">ON</span> d.DocumentID = t.DocumentID
+<span class="kw">GROUP BY</span> Tag;</pre></div>
+  </div>
+
+  <footer>Document Clustering System · Flask + SQLite · DDL · DML · DCL</footer>
+</div>
+
+<script>
+const COLORS = {
+  Technology:  { bar:'bf-tech' },
+  Sports:      { bar:'bf-sports' },
+  Education:   { bar:'bf-edu' },
+  Health:      { bar:'bf-health' },
+  Environment: { bar:'bf-env' },
+};
+const SECS = ['documents','clusters','by-cluster','tags','sql'];
+
+function showSection(id, btn) {
+  SECS.forEach(s => { const el=document.getElementById('sec-'+s); if(el) el.style.display='none'; });
+  const target = document.getElementById('sec-'+id);
+  if (target) target.style.display = 'block';
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  // trigger bars if showing by-cluster
+  if (id === 'by-cluster') {
+    setTimeout(() => {
+      document.querySelectorAll('.bar-fill').forEach(b => b.style.width = b.dataset.w+'%');
+    }, 80);
+  }
+}
+
+async function loadAll() {
+  const [stats, counts, byCluster, tags] = await Promise.all([
+    fetch('/api/stats').then(r=>r.json()),
+    fetch('/api/cluster_counts').then(r=>r.json()),
+    fetch('/api/documents_by_cluster').then(r=>r.json()),
+    fetch('/api/tags').then(r=>r.json()),
+  ]);
+
+  document.getElementById('stat-docs').textContent     = stats.total_docs;
+  document.getElementById('stat-clusters').textContent = stats.total_clusters;
+  document.getElementById('stat-tags').textContent     = stats.total_tags;
+
+  // Documents table
+  const allDocs = [];
+  Object.values(byCluster).forEach(c => c.docs.forEach(d => allDocs.push(d)));
+  document.getElementById('tbl-documents').innerHTML = allDocs.map(d =>
+    `<tr><td><span class="doc-badge">${d.id}</span></td><td>${d.content}</td></tr>`
+  ).join('');
+
+  // Clusters table
+  document.getElementById('tbl-clusters').innerHTML = counts.map((c,i) => `
+    <tr>
+      <td style="color:#5a7fa0">${i+1}</td>
+      <td><span class="cluster-pill pill-${c.ClusterName}">${c.ClusterName}</span></td>
+      <td style="font-weight:600">${c.DocCount}</td>
+    </tr>`).join('');
+
+  // Bar chart
+  const max = Math.max(...counts.map(c=>c.DocCount));
+  document.getElementById('bar-chart').innerHTML = counts.map(c => `
+    <div class="bar-row">
+      <div class="bar-label">${c.ClusterName}</div>
+      <div class="bar-track">
+        <div class="bar-fill ${COLORS[c.ClusterName]?.bar}" data-w="${(c.DocCount/max)*100}"></div>
+      </div>
+      <div class="bar-count">${c.DocCount}</div>
+    </div>`).join('');
+
+  // Docs by cluster table
+  const tagLookup = {};
+  Object.entries(tags).forEach(([tag, titles]) => titles.forEach(t => tagLookup[t] = tag));
+  const rows = [];
+  Object.entries(byCluster).forEach(([cluster, info]) => {
+    info.docs.forEach(d => rows.push(`<tr>
+      <td><span class="doc-badge">${d.id}</span></td>
+      <td>${d.content}</td>
+      <td><span class="cluster-pill pill-${cluster}">${cluster}</span></td>
+      <td style="color:#5a7fa0;font-size:12px">${tagLookup[d.id]||'—'}</td>
+    </tr>`));
+  });
+  document.getElementById('tbl-by-cluster').innerHTML = rows.join('');
+
+  // Tag cloud
+  document.getElementById('tag-cloud').innerHTML = Object.keys(tags).map(t =>
+    `<div class="tag"># ${t}</div>`).join('');
+
+  // Tag table
+  document.getElementById('tbl-tags').innerHTML = Object.entries(tags).map(([tag, docs]) =>
+    `<tr>
+      <td><span style="color:#4ea8de;font-weight:600">${tag}</span></td>
+      <td style="color:#8aadcc">${docs.join(', ')}</td>
+    </tr>`
+  ).join('');
+}
+
+async function assignDoc() {
+  const docId   = parseInt(document.getElementById('inp-doc').value);
+  const clustId = parseInt(document.getElementById('inp-cluster').value);
+  if (!docId || !clustId) { showToast('Please enter both Document ID and Cluster ID.','error'); return; }
+  if (docId<1||docId>20)  { showToast('Document ID must be 1–20.','error'); return; }
+  if (clustId<1||clustId>5){ showToast('Cluster ID must be 1–5.','error'); return; }
+  try {
+    const res = await fetch('/api/assign',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({doc_id:docId, cluster_id:clustId})
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast(`✓ Document D${docId} assigned to Cluster ${clustId}.`,'success');
+      document.getElementById('inp-doc').value='';
+      document.getElementById('inp-cluster').value='';
+      loadAll();
+    } else { showToast(data.error||'Assignment failed.','error'); }
+  } catch(e) { showToast('Network error — is Flask running?','error'); }
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('assign-toast');
+  t.textContent = msg;
+  t.className = 'toast '+type;
+  t.style.display = 'block';
+  setTimeout(()=>t.style.display='none', 4000);
+}
+
+function showSQL(tab, btn) {
+  document.querySelectorAll('.sql-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.sql-content').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sql-'+tab).classList.add('active');
+}
+
+loadAll();
+</script>
+</body>
+</html>
