@@ -3,11 +3,12 @@ import sqlite3
 import os
 
 app = Flask(__name__)
-DB_PATH = "clustering.db"
+DB_PATH = os.environ.get("CLUSTERING_DB_PATH", os.path.join(os.path.dirname(__file__), "clustering.db"))
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
 def init_db():
@@ -15,23 +16,18 @@ def init_db():
     c = conn.cursor()
 
     c.executescript("""
-        DROP TABLE IF EXISTS DocumentClusters;
-        DROP TABLE IF EXISTS DocumentTags;
-        DROP TABLE IF EXISTS Documents;
-        DROP TABLE IF EXISTS Clusters;
-
-        CREATE TABLE Documents (
+        CREATE TABLE IF NOT EXISTS Documents (
             DocumentID INT PRIMARY KEY,
             Title VARCHAR(255),
             Content TEXT
         );
 
-        CREATE TABLE Clusters (
+        CREATE TABLE IF NOT EXISTS Clusters (
             ClusterID INT PRIMARY KEY,
             ClusterName VARCHAR(100)
         );
 
-        CREATE TABLE DocumentClusters (
+        CREATE TABLE IF NOT EXISTS DocumentClusters (
             DocumentID INT,
             ClusterID INT,
             PRIMARY KEY (DocumentID, ClusterID),
@@ -39,7 +35,7 @@ def init_db():
             FOREIGN KEY (ClusterID) REFERENCES Clusters(ClusterID)
         );
 
-        CREATE TABLE DocumentTags (
+        CREATE TABLE IF NOT EXISTS DocumentTags (
             DocumentID INT,
             Tag VARCHAR(50),
             PRIMARY KEY (DocumentID, Tag),
@@ -69,7 +65,7 @@ def init_db():
         (19, 'D19', 'Recycling helps protect the environment.'),
         (20, 'D20', 'Renewable energy reduces carbon emissions.'),
     ]
-    c.executemany("INSERT INTO Documents VALUES (?,?,?)", documents)
+    c.executemany("INSERT OR IGNORE INTO Documents VALUES (?,?,?)", documents)
 
     clusters = [
         (1, 'Technology'),
@@ -78,7 +74,7 @@ def init_db():
         (4, 'Health'),
         (5, 'Environment'),
     ]
-    c.executemany("INSERT INTO Clusters VALUES (?,?)", clusters)
+    c.executemany("INSERT OR IGNORE INTO Clusters VALUES (?,?)", clusters)
 
     doc_clusters = [
         (1,1),(2,1),(3,1),(4,1),
@@ -87,7 +83,7 @@ def init_db():
         (13,4),(14,4),(15,4),(16,4),
         (17,5),(18,5),(19,5),(20,5),
     ]
-    c.executemany("INSERT INTO DocumentClusters VALUES (?,?)", doc_clusters)
+    c.executemany("INSERT OR IGNORE INTO DocumentClusters VALUES (?,?)", doc_clusters)
 
     tags = [
         (1,'AI'),(2,'ML'),(3,'Cloud'),(4,'Cybersecurity'),
@@ -96,7 +92,7 @@ def init_db():
         (13,'Exercise'),(14,'Diet'),(15,'Hospital'),(16,'Vaccine'),
         (17,'Climate'),(18,'Trees'),(19,'Recycling'),(20,'Energy'),
     ]
-    c.executemany("INSERT INTO DocumentTags VALUES (?,?)", tags)
+    c.executemany("INSERT OR IGNORE INTO DocumentTags VALUES (?,?)", tags)
 
     conn.commit()
     conn.close()
@@ -172,9 +168,13 @@ def api_stats():
 
 @app.route('/api/assign', methods=['POST'])
 def api_assign():
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({'error': 'A JSON object is required'}), 400
     doc_id = data.get('doc_id')
     cluster_id = data.get('cluster_id')
+    if type(doc_id) is not int or type(cluster_id) is not int:
+        return jsonify({'error': 'doc_id and cluster_id must be integers'}), 400
     conn = get_db()
     try:
         conn.execute("INSERT OR IGNORE INTO DocumentClusters VALUES (?,?)", (doc_id, cluster_id))
@@ -185,6 +185,7 @@ def api_assign():
         conn.close()
         return jsonify({'error': str(e)}), 400
 
+init_db()
+
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True)
