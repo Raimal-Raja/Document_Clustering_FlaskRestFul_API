@@ -2,12 +2,11 @@
 
 Document categorization experiments with a Streamlit interface and a Flask SQLite cluster-management API.
 
-## Repository guide
+## Setup and repository reference
 
-### Contents
+### Project structure
 
 - [LICENSE](LICENSE)
-- [README.md](README.md)
 - [Task_2](Task_2)
 - [requirements.txt](requirements.txt)
 - [streamlit_app.py](streamlit_app.py)
@@ -38,6 +37,8 @@ python Task_2/app.py
 
 ### Configuration and limitations
 
+The Flask cluster-management API and Streamlit categorization interface are separate examples. CLUSTERING_DB_PATH overrides the Flask SQLite database location. Database/API regression tests do not validate the Streamlit classifier.
+
 ### Maintenance fixes
 
 - Preserve existing SQLite data during initialization.
@@ -46,11 +47,15 @@ python Task_2/app.py
 
 ### Validation
 
-Reviewed on 2026-10-08. Two regression tests passed with unittest. Python source syntax checks passed. See tests/ for the tested behavior.
+Audit: 2026-10-08. Repository structure, setup instructions and description were reviewed. 3 existing Python files passed syntax checks; changed files and new regression tests were checked separately. 2 regression tests passed. Syntax checks do not establish full runtime correctness. External APIs, live scraping, GUI interaction, notebook training and production deployment were not comprehensively exercised.
 
 ```bash
 python -m unittest discover -s tests -v
 ```
+
+### Repository description
+
+The short GitHub description is provided in [REPOSITORY_DESCRIPTION.md](REPOSITORY_DESCRIPTION.md).
 
 ### Contributions
 
