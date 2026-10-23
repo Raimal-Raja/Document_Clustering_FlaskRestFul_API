@@ -1,62 +1,76 @@
-# Document Clustering FlaskRestFul API
+# Document Categorization and Cluster Management
 
 Document categorization experiments with a Streamlit interface and a Flask SQLite cluster-management API.
 
-## Setup and repository reference
+## Project focus
 
-### Project structure
+Application / engineering project. The sections below separate the runnable entry point, source layout, prerequisites, and verification path.
 
-- [LICENSE](LICENSE)
-- [Task_2](Task_2)
-- [requirements.txt](requirements.txt)
-- [streamlit_app.py](streamlit_app.py)
-- [tests](tests)
-- [text_classifier.db](text_classifier.db)
+## Architecture
 
-### Getting started
+```mermaid
+flowchart TD
+    A["Choose interface"] --> B{"Execution path"}
+    B --> C["Streamlit categorization experiment"]
+    B --> D["Task_2 Flask API"]
+    C --> E["Document features and categories"]
+    D --> F["SQLite documents and assignments"]
+    E --> G["Review output"]
+    F --> G
+```
+
+## Repository structure
+
+| Path | Purpose |
+| --- | --- |
+| [`LICENSE`](LICENSE) | Repository licensing terms. |
+| [`Task_2/`](Task_2) | Project-specific source, resources, or learning material. |
+| [`requirements.txt`](requirements.txt) | Python dependency manifest. |
+| [`streamlit_app.py`](streamlit_app.py) | Python application helper or learning example. |
+| [`tests/`](tests) | Automated checks and regression cases. |
+| [`text_classifier.db`](text_classifier.db) | Dataset, fixture, state, or database file; inspect its schema before use. |
+
+## Getting started
 
 ```bash
 git clone https://github.com/Raimal-Raja/Document_Clustering_FlaskRestFul_API.git
 cd Document_Clustering_FlaskRestFul_API
 ```
 
-Create and activate a virtual environment, then install the project dependencies:
-
 ```bash
 python -m venv .venv
-# Linux/macOS: source .venv/bin/activate
-# Windows PowerShell: .venv\Scripts\Activate.ps1
-python -m pip install -r "requirements.txt"
+source .venv/bin/activate
 ```
 
-Application entry point:
+On Windows PowerShell, activate the environment with `.venv\Scripts\Activate.ps1` instead.
 
 ```bash
-python Task_2/app.py
+python -m pip install -r requirements.txt
 ```
 
-### Configuration and limitations
+```bash
+python -m streamlit run streamlit_app.py
+```
 
-The Flask cluster-management API and Streamlit categorization interface are separate examples. CLUSTERING_DB_PATH overrides the Flask SQLite database location. Database/API regression tests do not validate the Streamlit classifier.
+The separate Flask API can be launched from its application directory:
 
-### Maintenance fixes
+```bash
+cd Task_2
+python app.py
+```
 
-- Preserve existing SQLite data during initialization.
-- Initialize the database when imported by a Flask server.
-- Validate assignment payloads and enforce foreign keys.
-
-### Validation
-
-Recorded checks from the previous maintenance review (2026-10-08): 3 existing Python files passed syntax checks; changed files and new regression tests were checked separately. 2 regression tests passed. Syntax checks do not establish full runtime correctness. External APIs, live scraping, GUI interaction, notebook training and production deployment were not comprehensively exercised.
+## Verification
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-### Contributions
+Install the selected project dependencies and optional test prerequisites first. Some integration checks require model artifacts, databases, or external services.
 
-Describe the issue, reproduction steps, environment, and expected behavior when proposing a change. Keep generated environments, credentials, and unnecessary build artifacts out of new commits.
+## Contributing
 
-### License
+Include reproduction steps, the affected path, expected behavior, and the checks you ran. Keep credentials, generated environments, and unnecessary build artifacts out of commits.
 
-See [LICENSE](LICENSE) for the repository’s licensing terms.
+## License
+
+See [LICENSE](LICENSE) for the repository's license.
